@@ -1,30 +1,79 @@
 require 'json'
+require 'yaml'
 require 'savon'
 
-def get_connection
-  partner_wsdl = File.expand_path(File.dirname(__FILE__)) + '/../wsdl/partner.wsdl'
+def get_file(file)
+  [File.expand_path(File.dirname(__FILE__)), '/', file].join
+end
+
+def get_target
+  target_file = get_file('target.json')
+  target_data = open(target_file) { |f| JSON.load(f) }
+
+  ret = target_data.inject([]) do |arr, (obj, fields)|
+    arr << fields.map {|field| "#{obj}.#{field}" }
+  end
+
+  ret.flatten!
+end
+
+def get_config
+  config = YAML.load_file(get_file('sfdc.yaml'))
+  return config['username'], "#{config['password']}#{config['security_token']}"
+end
+
+def get_connection(username, password)
+
+  partner_wsdl = get_file('../wsdl/partner.wsdl')
   client = Savon.client(wsdl: partner_wsdl)
   response = client.call(
     :login,
     :message => {
-      :username => 'satohk@hrk.dev1.tv.co.jp',
-      :password => 'satken0909'
+      :username => username,
+      :password => password
     }
   )
   session_id = response.body[:login_response][:result][:session_id]
   metadata_url = response.body[:login_response][:result][:metadata_server_url]
 
-  cli2 = Savon.client(
-    wsdl: partner_wsdl,
-    endpoint: response.body[:login_response][:result][:server_url],
-    soap_header: {
-      "tns:SessionHeader" => {"tns:sessionId" => session_id}
+  return session_id, metadata_url
+end
+
+def delete_fields(session_id, url, target)
+  metadata_url = get_file('../wsdl/metadata.wsdl')
+  client = Savon.client(
+    :wsdl => metadata_url,
+    :endpoint => url,
+    :soap_header => {"tns:SessionHeader" => {"tns:sessionId" => session_id}}
+  )
+
+  response = client.call(
+    :delete_metadata,
+    :message => {
+      :type => 'CustomField',
+      :fullnames => target
     }
   )
 
-  res2 = cli2.call(:describe_s_objects)
-  puts res2
 end
 
-get_connection
+# get dasta
+target_data = get_target
+username, password = get_config
+
+# confirm
+puts '--------------------------------------------------------------------'
+puts format('username: %s', username)
+puts '---------------------'
+puts 'target:'
+target_data.each { |target| puts format('    %s', target) }
+puts '--------------------------------------------------------------------'
+print 'are you sure?(y, n) > '
+do_this = gets.chomp
+
+exit(0) if 'y' != do_this
+
+# access to salseforce
+session_id, url = get_connection(username, password)
+delete_fields(session_id, url, target_data)
 

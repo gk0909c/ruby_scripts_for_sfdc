@@ -1,5 +1,8 @@
 {
   "Account": [
     "NumberofLocations__c", "SLA__c"
+  ],
+  "Contact": [
+    "Level__c"
   ]
 }
