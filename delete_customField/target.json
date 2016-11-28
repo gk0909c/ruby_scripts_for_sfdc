@@ -1,8 +1,15 @@
 {
-  "Account": [
-    "NumberofLocations__c", "SLA__c"
-  ],
-  "Contact": [
-    "Level__c"
+  "FromMetadata__c": [
+    "TestUrl__c",
+    "TestCheckbox__c",
+    "TestTextArea__c",
+    "TestText__c",
+    "TestPercent__c",
+    "TestMail__c",
+    "TestLongTextArea__c",
+    "TestEncript__c",
+    "TestRelation__c",
+    "TestAutoNumber__c",
+    "TestNumber__c"
   ]
 }

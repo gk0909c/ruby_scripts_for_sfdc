@@ -19,13 +19,13 @@ end
 
 def get_config
   config = YAML.load_file(get_file('sfdc.yaml'))
-  return config['username'], "#{config['password']}#{config['security_token']}"
+  return config['username'], "#{config['password']}#{config['security_token']}", config['endpoint']
 end
 
-def get_connection(username, password)
+def get_connection(username, password, endpoint)
 
   partner_wsdl = get_file('../wsdl/partner.wsdl')
-  client = Savon.client(wsdl: partner_wsdl)
+  client = Savon.client(wsdl: partner_wsdl, :endpoint => endpoint)
   response = client.call(
     :login,
     :message => {
@@ -47,19 +47,22 @@ def delete_fields(session_id, url, target)
     :soap_header => {"tns:SessionHeader" => {"tns:sessionId" => session_id}}
   )
 
-  response = client.call(
-    :delete_metadata,
-    :message => {
-      :type => 'CustomField',
-      :fullnames => target
-    }
-  )
+  target.each_slice(3) do |part|
+    response = client.call(
+      :delete_metadata,
+      :message => {
+        :type => 'CustomField',
+        :fullnames => part
+      }
+    )
 
+    puts response.body[:delete_metadata_response][:result]
+  end
 end
 
 # get dasta
 target_data = get_target
-username, password = get_config
+username, password, endpoint = get_config
 
 # confirm
 puts '--------------------------------------------------------------------'
@@ -74,6 +77,6 @@ do_this = gets.chomp
 exit(0) if 'y' != do_this
 
 # access to salseforce
-session_id, url = get_connection(username, password)
+session_id, url = get_connection(username, password, endpoint)
 delete_fields(session_id, url, target_data)
 
