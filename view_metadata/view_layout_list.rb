@@ -1,19 +1,28 @@
 require './service/sfdc_service.rb'
 
-connection = SfdcConnection.new
+# recieve metadata type
+print 'Specify metadata type > '
+metadata_type = gets.chomp
 
+# connect to salesforce
+connection = SfdcConnection.new
 client = connection.create_metadata_client
 res = client.call(
   :list_metadata,
   :message => {
     :queries => {
-      :type => 'Layout',
+      :type => metadata_type,
     },
     :api_version => 38,
   }
 )
 
-res.body[:list_metadata_response][:result]
+# print result
+metadatas = res.body[:list_metadata_response][:result]
   .sort_by { |layout| layout[:full_name] }
-  .each { |layout| puts "name: #{layout[:full_name]}" }
+puts '========================================================='
+puts connection.username
+puts '========================================================='
+metadatas.each { |layout| puts layout[:full_name] }
+puts '========================================================='
 
