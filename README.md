@@ -5,6 +5,7 @@
 |view_objects|view custom object list|available|
 
 ## to be improve
++ add test
 + delete over 10 fields
   + 各実行でresultを見て、失敗時だけ結果をputsするようにする
 

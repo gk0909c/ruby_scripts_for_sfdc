@@ -1,13 +1,8 @@
-require 'json'
-require 'yaml'
-require 'savon'
-
-def get_file(file)
-  [File.expand_path(File.dirname(__FILE__)), '/', file].join
-end
+require './service/sfdc_service.rb'
+require './service/file.rb'
 
 def get_target
-  target_file = get_file('target.json')
+  target_file = FileService.get_file('../delete_customField/target.json')
   target_data = open(target_file) { |f| JSON.load(f) }
 
   ret = target_data.inject([]) do |arr, (obj, fields)|
@@ -17,56 +12,13 @@ def get_target
   ret.flatten!
 end
 
-def get_config
-  config = YAML.load_file(get_file('sfdc.yaml'))
-  return config['username'], "#{config['password']}#{config['security_token']}", config['endpoint']
-end
-
-def get_connection(username, password, endpoint)
-
-  partner_wsdl = get_file('../wsdl/partner.wsdl')
-  client = Savon.client(wsdl: partner_wsdl, :endpoint => endpoint)
-  response = client.call(
-    :login,
-    :message => {
-      :username => username,
-      :password => password
-    }
-  )
-  session_id = response.body[:login_response][:result][:session_id]
-  metadata_url = response.body[:login_response][:result][:metadata_server_url]
-
-  return session_id, metadata_url
-end
-
-def delete_fields(session_id, url, target)
-  metadata_url = get_file('../wsdl/metadata.wsdl')
-  client = Savon.client(
-    :wsdl => metadata_url,
-    :endpoint => url,
-    :soap_header => {"tns:SessionHeader" => {"tns:sessionId" => session_id}}
-  )
-
-  target.each_slice(3) do |part|
-    response = client.call(
-      :delete_metadata,
-      :message => {
-        :type => 'CustomField',
-        :fullnames => part
-      }
-    )
-
-    puts response.body[:delete_metadata_response][:result]
-  end
-end
-
-# get dasta
+# main script
 target_data = get_target
-username, password, endpoint = get_config
+connection = SfdcConnection.new
 
 # confirm
 puts '--------------------------------------------------------------------'
-puts format('username: %s', username)
+puts format('username: %s', connection.username)
 puts '---------------------'
 puts 'target:'
 target_data.each { |target| puts format('    %s', target) }
@@ -76,7 +28,17 @@ do_this = gets.chomp
 
 exit(0) if 'y' != do_this
 
-# access to salseforce
-session_id, url = get_connection(username, password, endpoint)
-delete_fields(session_id, url, target_data)
+client = connection.create_metadata_client
 
+# delete field per 10 count.
+target_data.each_slice(10) do |target|
+  response = client.call(
+    :delete_metadata,
+    :message => {
+      :type => 'CustomField',
+      :fullnames => target
+    }
+  )
+
+  puts response.body[:delete_metadata_response][:result]
+end
