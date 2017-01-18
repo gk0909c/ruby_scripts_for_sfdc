@@ -2,7 +2,8 @@
 |script|describe|status|
 |---|---|---|
 |delete_custom_field|delete custom field from json file|available|
-|view_objects|view custom object list|available|
+|view_objects_list|view custom object list|available|
+|view_layout_list|view layout list|available|
 
 ## to be improve
 + add test
