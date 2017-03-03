@@ -11,16 +11,7 @@ class SfdcConnection
 
   def initialize
     config = YAML.load_file(get_file('lib/sfdc.yaml'))
-
-    client = create_client('partner.wsdl', config['endpoint'])
-    response = client.call(
-      :login,
-      message: {
-        username: config['username'],
-        password: "#{config['password']}#{config['security_token']}"
-      }
-    )
-
+    response = login_to_salesforce(config)
     keep_connection_info(config['username'], response.body[:login_response][:result])
   end
 
@@ -44,9 +35,16 @@ class SfdcConnection
 
   private
 
-    def create_client(wsdl_file, endpoint)
-      wsdl = get_file(wsdl_file)
-      Savon.client(wsdl: wsdl, endpoint: endpoint)
+    def login_to_salesforce(config)
+      wsdl = get_file('lib/partner.wsdl')
+      client = Savon.client(wsdl: wsdl, endpoint: config['endpoint'])
+      client.call(
+        :login,
+        message: {
+          username: config['username'],
+          password: "#{config['password']}#{config['security_token']}"
+        }
+      )
     end
 
     def keep_connection_info(username, res)
