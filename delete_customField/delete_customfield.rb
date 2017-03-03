@@ -1,19 +1,19 @@
 require './service/sfdc_service.rb'
 require './service/file.rb'
 
-def get_target
+def read_target
   target_file = FileService.get_file('../delete_customField/target.json')
-  target_data = open(target_file) { |f| JSON.load(f) }
+  target_data = open(target_file) { |f| JSON.parse(f) }
 
   ret = target_data.inject([]) do |arr, (obj, fields)|
-    arr << fields.map {|field| "#{obj}.#{field}" }
+    arr << fields.map { |field| "#{obj}.#{field}" }
   end
 
   ret.flatten!
 end
 
 # main script
-target_data = get_target
+target_data = read_target
 connection = SfdcConnection.new
 
 # confirm
@@ -34,9 +34,9 @@ client = connection.create_metadata_client
 target_data.each_slice(10) do |target|
   response = client.call(
     :delete_metadata,
-    :message => {
-      :type => 'CustomField',
-      :fullnames => target
+    message: {
+      type: 'CustomField',
+      fullnames: target
     }
   )
 

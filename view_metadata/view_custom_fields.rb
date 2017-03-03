@@ -8,11 +8,10 @@ client = connection.create_partner_client
 
 response = client.call(
   :describe_s_object,
-  :message => {
-    :s_object_type => custom_object
+  message: {
+    s_object_type: custom_object
   }
 )
 fields = response.body[:describe_s_object_response][:result][:fields]
 fields
   .each { |field| puts "name: #{field[:name].ljust(30)} label: #{field[:label]}" }
-

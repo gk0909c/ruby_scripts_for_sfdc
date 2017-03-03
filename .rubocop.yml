@@ -1,0 +1,20 @@
+AllCops:
+  Include:
+    - '**/Rakefile'
+    - '**/config.ru'
+  Exclude:
+    - 'db/**/*'
+    - 'config/**/*'
+    - 'script/**/*'
+    - !ruby/regexp /old_and_unused\.rb$/
+    - 'vendor/bundle/**/*'
+    - 'spec/spec_helper.rb'
+    - 'spec/rails_helper.rb'
+Style/LineLength:
+  Max: 120 
+Style/IndentationConsistency:
+  Enabled: true
+  EnforcedStyle: rails
+Style/BlockLength:
+  Exclude:
+    - 'spec/**/*.rb'

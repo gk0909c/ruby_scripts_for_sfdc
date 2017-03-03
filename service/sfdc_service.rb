@@ -3,6 +3,7 @@ require 'yaml'
 require 'savon'
 require './service/file.rb'
 
+# class for salesforce connection
 class SfdcConnection
   include FileService
 
@@ -14,39 +15,44 @@ class SfdcConnection
     client = create_client('partner.wsdl', config['endpoint'])
     response = client.call(
       :login,
-      :message => {
-        :username => config['username'],
-        :password => "#{config['password']}#{config['security_token']}"
+      message: {
+        username: config['username'],
+        password: "#{config['password']}#{config['security_token']}"
       }
     )
 
-    @username = config['username']
-    @session_id = response.body[:login_response][:result][:session_id]
-    @server_url = response.body[:login_response][:result][:server_url]
-    @metadata_url = response.body[:login_response][:result][:metadata_server_url]
+    kekep_connection_info(config['username'], response.body[:login_response][:result])
   end
 
   def create_partner_client
     wsdl = get_file('partner.wsdl')
     Savon.client(
-      :wsdl => wsdl,
-      :endpoint => @server_url,
-      :soap_header => {"tns:SessionHeader" => {"tns:sessionId" => @session_id}}
+      wsdl: wsdl,
+      endpoint: @server_url,
+      soap_header: { 'tns:SessionHeader' => { 'tns:sessionId' => @session_id } }
     )
   end
 
   def create_metadata_client
     wsdl = get_file('metadata.wsdl')
     Savon.client(
-      :wsdl => wsdl,
-      :endpoint => @metadata_url,
-      :soap_header => {"tns:SessionHeader" => {"tns:sessionId" => @session_id}}
+      wsdl: wsdl,
+      endpoint: @metadata_url,
+      soap_header: { 'tns:SessionHeader' => { 'tns:sessionId' => @session_id } }
     )
   end
 
   private
+
     def create_client(wsdl_file, endpoint)
       wsdl = get_file(wsdl_file)
-      Savon.client(wsdl: wsdl, :endpoint => endpoint)
+      Savon.client(wsdl: wsdl, endpoint: endpoint)
+    end
+
+    def keep_connection_info(username, res)
+      @username = username
+      @session_id = res[:session_id]
+      @server_url = res[:server_url]
+      @metadata_url = res[:metadata_server_url]
     end
 end
