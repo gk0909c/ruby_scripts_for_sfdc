@@ -2,3 +2,5 @@
 
 delete_customField/target.json
 service/sfdc.yaml
+
+/coverage/

@@ -1,7 +1,7 @@
 require 'json'
 require 'yaml'
 require 'savon'
-require './service/file.rb'
+require './lib/file.rb'
 
 # class for salesforce connection
 class SfdcConnection
@@ -10,7 +10,7 @@ class SfdcConnection
   attr_reader :username
 
   def initialize
-    config = YAML.load_file(get_file('sfdc.yaml'))
+    config = YAML.load_file(get_file('lib/sfdc.yaml'))
 
     client = create_client('partner.wsdl', config['endpoint'])
     response = client.call(
@@ -21,11 +21,11 @@ class SfdcConnection
       }
     )
 
-    kekep_connection_info(config['username'], response.body[:login_response][:result])
+    keep_connection_info(config['username'], response.body[:login_response][:result])
   end
 
   def create_partner_client
-    wsdl = get_file('partner.wsdl')
+    wsdl = get_file('lib/partner.wsdl')
     Savon.client(
       wsdl: wsdl,
       endpoint: @server_url,
@@ -34,7 +34,7 @@ class SfdcConnection
   end
 
   def create_metadata_client
-    wsdl = get_file('metadata.wsdl')
+    wsdl = get_file('lib/metadata.wsdl')
     Savon.client(
       wsdl: wsdl,
       endpoint: @metadata_url,
