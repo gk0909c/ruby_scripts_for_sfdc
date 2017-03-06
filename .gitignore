@@ -1,6 +1,6 @@
 /vendor/bundle/
 
 delete_customField/target.json
-service/sfdc.yaml
+lib/sfdc.yaml
 
 /coverage/
