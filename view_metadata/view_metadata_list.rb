@@ -1,4 +1,4 @@
-require './service/sfdc_service.rb'
+require './lib/sfdc_service.rb'
 
 # recieve metadata type
 print 'Specify metadata type > '

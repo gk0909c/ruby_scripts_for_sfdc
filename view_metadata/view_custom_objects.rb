@@ -1,4 +1,4 @@
-require './service/sfdc_service.rb'
+require './lib/sfdc_service.rb'
 
 connection = SfdcConnection.new
 client = connection.create_partner_client

@@ -1,8 +1,8 @@
-require './service/sfdc_service.rb'
-require './service/file.rb'
+require './lib/sfdc_service.rb'
+require './lib/file.rb'
 
 def read_target
-  target_file = FileService.get_file('../delete_customField/target.json')
+  target_file = FileService.get_file('./delete_customField/target.json')
   target_data = open(target_file) { |f| JSON.parse(f) }
 
   ret = target_data.inject([]) do |arr, (obj, fields)|

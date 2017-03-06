@@ -1,4 +1,4 @@
-require './service/sfdc_service.rb'
+require './lib/sfdc_service.rb'
 
 print 'Specify metadata type > '
 custom_object = gets.chomp
